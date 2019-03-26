@@ -14,6 +14,14 @@ describe('Restaurant model', () => {
         const arrayOfRestaurants = await Restaurant.getAll();
         expect(arrayOfRestaurants).to.be.instanceOf(Array);
     })
+    it('should be able to grab restaurants by id', async () => {
+        const restaurant = await Restaurant.getById(2);
+        expect(restaurant).to.be.instanceOf(Restaurant);
+    });
+    it('should error if no restaurant by id', async () => {
+        const restaurant = await Restaurant.getById(1234);
+        expect(restaurant).to.be.null;
+    });
 });
 
 
