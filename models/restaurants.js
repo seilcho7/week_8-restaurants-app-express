@@ -18,13 +18,18 @@ class Restaurant {
     static getAll() {
         // .any returns 0 or more results in an array
         // but that's async, so we 'return' the call to db.any
-        return db.any(`select * from restaurants`);
+        return db.any(`select * from restaurants`)
+            .then((result) => {
+                console.log(result);
+                return result;
+        });
     }
 
     static getById(id) {
         return db.one(`select * from restaurants where id=${id}`)
             .then((restaurantData) => {
                 const restaurantInstance = new Restaurant(restaurantData.id, restaurantData.name, restaurantData.address, restaurantData.street, restaurantData.city, restaurantData.state, restaurantData.phone, restaurantData.menu, restaurantData.picture);
+                console.log(restaurantInstance);
                 return restaurantInstance;
             })
             .catch(() => {
