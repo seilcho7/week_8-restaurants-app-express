@@ -6,6 +6,16 @@ chai.use(chaiAsPromised).should();
 
 const User = require('../models/users');
 const Restaurant = require('../models/restaurants');
+const Review = require('../models/reviews')
+
+describe('Review model', () => {
+    it('should be able to grab reviews of a restaurant', async () => {
+        const reviews = await Review.getAll(2);
+        expect(reviews).to.be.instanceOf(Array);
+    })
+})
+
+
 
 // add a "describe block" for restaurant tests
 describe('Restaurant model', () => {
@@ -48,13 +58,14 @@ describe('Users model', () => {
         // theUser.should.have.length(1);
     });
 
+    // as long as there is no exception thrown in an it block, that counts as a passing test
     it('should update the user', async () => {
         // grab a user with id 2
         const theUser = await User.getById(2);
         // update the email
         theUser.email = "new@new.com";
         // save the user
-        theUser.save();
+        await theUser.save();
         // re-grab the user with id 2
         const alsoTheUser = await User.getById(2);
         // expect the email to be equal to the new value
