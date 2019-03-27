@@ -7,6 +7,7 @@ chai.use(chaiAsPromised).should();
 const User = require('../models/users');
 const Restaurant = require('../models/restaurants');
 const Review = require('../models/reviews');
+const Favorite = require('../models/favorites');
 
 // add a "describe block" for restaurant tests
 describe('Restaurant model', () => {
@@ -61,6 +62,66 @@ describe('Users model', () => {
         // expect the email to be equal to the new value
         expect(alsoTheUser.email).to.equal('new@new.com');
     });
+
+    it('should not have the same email after updating it', async () => {
+        // grab a user with id 2
+        const theUser = await User.getById(2);
+        // grab the current value for the email field
+        const theOldEmail = theUser.email;
+
+        // update the email to a new value
+        // using the unix timestamp as part of the address
+        const theNewEmail = `new${new Date().getTime()}@email.com`;
+        theUser.email = theNewEmail;
+        
+        // save the user to the database
+        await theUser.save();
+        
+        // re-grab the user with id 2
+        const alsoTheUser = await User.getById(2);
+        
+        // expect the email not to be equal to the new value;
+        expect(alsoTheUser.email).not.to.be.equal(theOldEmail);
+        expect(alsoTheUser.email).to.be.equal(theNewEmail);
+
+
+        // theUser.save()
+        //     .then(async (report) => {
+        //         // console.log(report);
+        //         // re-grab the user with id 2
+        //         const alsoTheUser = await User.getById(2);
+        //         // expect the email to be equal to the new value
+        //         expect(alsoTheUser.email).to.equal('new3asdfadf@new.com');
+        //     });
+    }); 
+
+    it('should encrypt the password', async () => {
+        const password = "bacon";
+        // get a user with id 1
+        const theUser = await User.getById(1);
+        // set their password field to "bacon"
+        theUser.setPassword("bacon");
+        //compare their password to "bacon"
+        expect(theUser.password).not.to.equal(password);
+        // it should be false
+    });
+
+    it('should be able to check for correct passwords', async () => {
+        // get a user with id 1
+        const theUser = await User.getById(1);
+        // set their password field to "bacon"
+        theUser.setPassword("bacon");
+        // save them to the database
+        await theUser.save();
+        // get them back out of the database
+        const sameUser = await User.getById(1);
+        // ask them if their password is "bacon"
+        const isCorrectPassword = sameUser.checkPassword('bacon');
+        expect(isCorrectPassword).to.be.true;
+
+        const isNotCorrectPassword = sameUser.checkPassword('tofu');
+        expect(isNotCorrectPassword).to.be.false;
+    });
 });
 
 describe('Reviews model', () => {
@@ -98,5 +159,24 @@ describe('Users and Reviews', () => {
         for (let i = 0; i < theReviews.length; i++) {
             expect(theReviews[i]).to.be.instanceOf(Review);
         }
+    });
+});
+
+describe('Users and Favorites', () => {
+    it('should be able to retrieve all favorites for a user', async () => {
+        // grab a user by id 1
+        const theUser = await User.getById(1)
+            .then((user) => {
+                console.log(user);
+                return user;
+            });
+        // then get all their favorites
+        const theFavorites = await theUser.favorites()
+            .then((favorite) => {
+                console.log(favorite);
+                return favorite;
+            });
+        // confirm that the favorites are in an array
+        expect(theFavorites).to.be.instanceOf(Array);
     });
 });

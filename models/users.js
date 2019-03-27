@@ -1,6 +1,8 @@
 // Bring in the database connection.
 const db = require('./conn');
 const Review = require('./reviews');
+const Favorite = require('./favorites');
+const bcrypt = require('bcryptjs');
 
 // Need a User class.
 // Classes should start with an uppercase letter
@@ -38,7 +40,7 @@ class User {
     save() {
         // use .result when you might want a report about
         // how many rows got affected
-        db.result(`
+        return db.result(`
         update users set 
             first_name='${this.firstName}',
             last_name='${this.lastName}',
@@ -46,6 +48,16 @@ class User {
             password='${this.password}'
         where id=${this.id}
         `);
+    }
+
+    setPassword(newPassword) {
+        const salt = bcrypt.genSaltSync(10);
+        const hash = bcrypt.hashSync(newPassword, salt);
+        this.password = hash;
+    }
+
+    checkPassword(aPassword) {
+        return bcrypt.compareSync(aPassword, this.password);
     }
 
     // getReviews() {
@@ -64,6 +76,20 @@ class User {
                     arrayOfReviewInstances.push(newInstance);
                 });
                 return arrayOfReviewInstances;
+            });
+    }
+
+    favorites() {
+        return db.any(`select * from favorites where user_id=${this.id}`)
+            .then((arrayOfData) => {
+                return arrayOfData.map((favoriteData) => {
+                    const favoriteInstance = new Favorite(
+                        favoriteData.id,
+                        favoriteData.user_id,
+                        favoriteData.restaurant_id
+                    );
+                    return favoriteInstance;
+                });
             });
     }
 }
