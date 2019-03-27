@@ -6,16 +6,7 @@ chai.use(chaiAsPromised).should();
 
 const User = require('../models/users');
 const Restaurant = require('../models/restaurants');
-const Review = require('../models/reviews')
-
-describe('Review model', () => {
-    it('should be able to grab reviews of a restaurant', async () => {
-        const reviews = await Review.getAll(2);
-        expect(reviews).to.be.instanceOf(Array);
-    })
-})
-
-
+const Review = require('../models/reviews');
 
 // add a "describe block" for restaurant tests
 describe('Restaurant model', () => {
@@ -33,7 +24,6 @@ describe('Restaurant model', () => {
         expect(restaurant).to.be.null;
     });
 });
-
 
 // describe('Sanity check', function () {
 //     it('should be 2', function () {
@@ -72,3 +62,14 @@ describe('Users model', () => {
         expect(alsoTheUser.email).to.equal('new@new.com');
     });
 });
+
+describe('Reviews model', () => {
+    // Can I get one review?
+    it('should be able to retrieve a review by id', async () => {
+        // hopes and dreams
+        const thatReview = await Review.getById(2);
+        expect(thatReview).to.be.instanceOf(Review);
+    });
+    // Can I get all reviews?
+    // Can I get a review by user?
+})
