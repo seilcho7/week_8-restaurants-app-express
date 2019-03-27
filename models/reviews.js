@@ -15,20 +15,33 @@ class Review {
     static getById(id) {
         return db.one(`select * from reviews where id=${id}`)
             .then((reviewData) => {
-                return new Review(
+                const aReview = new Review(
                     reviewData.id,
                     reviewData.score,
                     reviewData.content,
                     reviewData.restaurant_id,
                     reviewData.user_id
                 );
+                return aReview;
             });
     }
 
     static getAll() {
         // .any returns 0 or more results in an array
         // but that's async, so we `return` the call to db.any
-        return db.any(`select * from reviews`);
+        return db.any(`select * from reviews`)
+            .then((arrayOfReviews) => {
+                return arrayOfReviews.map((reviewData) => {
+                    const aReview = new Review(
+                        reviewData.id,
+                        reviewData.score,
+                        reviewData.content,
+                        reviewData.restaurant_id,
+                        reviewData.user_id
+                    );
+                    return aReview;
+                });
+            });
     }
 
     static getLatest(howMany=10) {

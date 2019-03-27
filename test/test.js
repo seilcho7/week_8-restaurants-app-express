@@ -71,5 +71,32 @@ describe('Reviews model', () => {
         expect(thatReview).to.be.instanceOf(Review);
     });
     // Can I get all reviews?
-    // Can I get a review by user?
-})
+    it('should be able to retrieve all reviews', async () => {
+        const aBunchOfReviews = await Review.getAll();
+        expect(aBunchOfReviews).to.be.an.instanceOf(Array);
+        // and make sure each of them is an array
+        // Use a plain for loop, so that the exception does not
+        // get swallowed by a .forEach callback
+        for (let i = 0; i < aBunchOfReviews.length; i++) {
+            expect(aBunchOfReviews[i]).to.be.an.instanceOf(Review);
+        }
+    });
+});
+
+describe('Users and Reviews', () => {
+    it('a user instance should be able to retrieve all their reviews', async () => {
+        // grab a user by id 3
+        const theUser = await User.getById(3);
+        // then get all their reviews
+        // const theReviews = await theUser.getReviews();
+        const theReviews = await theUser.reviews;
+        // confirm that their reviews are in an array
+        expect(theReviews).to.be.instanceOf(Array);
+        // and that the array is the correct length, which should be 4
+        expect(theReviews).to.be.lengthOf(4);
+        // and that each one is an instance of Review
+        for (let i = 0; i < theReviews.length; i++) {
+            expect(theReviews[i]).to.be.instanceOf(Review);
+        }
+    });
+});
