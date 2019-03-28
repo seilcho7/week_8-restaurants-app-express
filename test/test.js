@@ -179,4 +179,7 @@ describe('Users and Favorites', () => {
         // confirm that the favorites are in an array
         expect(theFavorites).to.be.instanceOf(Array);
     });
+
+    it('should be able to add a favorite to a user', async () => {
+    });
 });
