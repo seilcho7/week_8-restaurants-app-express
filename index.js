@@ -1,4 +1,5 @@
 const http = require('http');
+const querystring = require('querystring');
 
 const hostname = '127.0.0.1';
 const port = 3000;
@@ -49,11 +50,34 @@ const server = http.createServer(async (req, res) => {
                 res.end('Resource not found.');
             }
         } else if (method === "POST") {
-            res.end('{ message: "it sounds like you would like create"}');
+            // let's read those chunks!
+            let body = '';
+            req.on('data', (chunk) => {
+                // .toString() is built into most objects
+                // it returns a string representation of the object
+                body += chunk.toString();
+            });
+
+            req.on('end', async () => {
+                const parsedBody = querystring.parse(body);
+                console.log('====================');
+                console.log(parsedBody);
+                console.log('^^^^^^ BODY OF FORM ^^^^^^^^');
+                const newUserId = await User.add(parsedBody);
+                res.end(`{ "id": ${newUserId}}`);
+            });
+
+
         } else if (method === "PUT") {
-            res.end('{ message: "you wanna update, donchoa?}');
+            res.end('{ "message": "you wanna update, doncha?"}');
         } else if (method === "DELETE") {
-            res.end('{ message: "rm the user}');
+            if (parts.length === 3) {
+                const userId = parts[2];
+                await User.delete(userId);
+                res.end(`{ "message": "Deleted user with id ${userId}"}`);
+            } else {
+                res.end('{ "message": "NO."}');
+            }
         }
 
     } else {
