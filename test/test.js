@@ -108,15 +108,15 @@ describe('Users model', () => {
 
     it('should be able to check for correct passwords', async () => {
         // get a user with id 1
-        const theUser = await User.getById(1);
+        const theUser = await User.getById(2);
         // set their password field to "bacon"
-        theUser.setPassword("bacon");
+        theUser.setPassword("g3t570n3d");
         // save them to the database
         await theUser.save();
         // get them back out of the database
-        const sameUser = await User.getById(1);
+        const sameUser = await User.getById(2);
         // ask them if their password is "bacon"
-        const isCorrectPassword = sameUser.checkPassword('bacon');
+        const isCorrectPassword = sameUser.checkPassword('g3t570n3d');
         expect(isCorrectPassword).to.be.true;
 
         const isNotCorrectPassword = sameUser.checkPassword('tofu');
@@ -170,7 +170,7 @@ describe('Users and Favorites', () => {
                 console.log(user);
                 return user;
             });
-        // then get all their favorites
+        // // then get all their favorites
         const theFavorites = await theUser.favorites()
             .then((favorite) => {
                 console.log(favorite);
@@ -178,8 +178,5 @@ describe('Users and Favorites', () => {
             });
         // confirm that the favorites are in an array
         expect(theFavorites).to.be.instanceOf(Array);
-    });
-
-    it('should be able to add a favorite to a user', async () => {
     });
 });

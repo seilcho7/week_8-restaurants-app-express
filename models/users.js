@@ -127,6 +127,13 @@ class User {
                 });
     }
 
+    favorites() {
+        return db.any(`select res.name from restaurants res inner join favorites fav on res.id = fav.restaurant_id where user_id=${this.id}`)
+            .then((favoritesData) => {
+                return favoritesData;
+            });
+    }
+
 }
 
 // User.getById(3)
