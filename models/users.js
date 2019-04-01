@@ -17,6 +17,14 @@ class User {
         this.password = password;
     }
 
+    static update(id, userData) {
+        return db.result(`
+            update users
+            set first_name = $1, last_name = $2, email = $3, password = $4
+            where id=$5
+        `, [userData.first_name, userData.last_name, userData.email, userData.password, id])
+    }
+
     static delete(id) {
         return db.result('delete from users where id=$1', [id]);
     }

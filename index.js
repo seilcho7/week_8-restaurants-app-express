@@ -1,92 +1,111 @@
-const http = require('http');
+// Bring in the express library.
+const express = require('express');
+// Create a new express app.
+const app = express();
+
+// let counter = 0;
+
+function log(req, res, next) {
+    console.log(`They asked for ${req.url}`);
+    // counter += 1;
+    // req.counter = counter;
+    next();
+}
+
+function checkForUser(req, res, next) {
+    // Pretend that we're checking for a real logged in user.
+    // For now, just add one to the req.
+    // req.user = {
+    //     username: 'Cascading Style Seils'
+    // };
+
+    const isLoggedIn = false;
+    if (isLoggedIn) {
+        req.user = {
+            username: 'Cascading Style Seils'
+        };
+        next();
+    } else {
+        // I do not want to go to the 'next' middleware
+        // I want to redirect them to the login page.
+        // Behind the scenes, tell the browser to make an additional request,
+        // but for a different URL.
+        res.redirect('/login');
+    }
+    // req.user = null;
+    // next();
+}
+
+function homePage(req, res) {
+    if (req.user) {
+        res.send(`Hey ${req.user.username}! Hooray!.`);
+    } else {
+        res.send("Wait, I don't know you.");
+    }
+}
+
+
+// const http = require('http');
 const querystring = require('querystring');
 
-const hostname = '127.0.0.1';
+// const hostname = '127.0.0.1';
 const port = 3000;
+
+// For POST
+app.use(express.urlencoded({extended: true}));
 
 // Import my model class
 const Restaurant = require('./models/restaurants');
 const User = require('./models/users');
 
-// "helper function" === "middleware"
-// a.k.a. "request handler"
-const server = http.createServer(async (req, res) => {
-    console.log(req);
+app.get('/', log, checkForUser, homePage);
 
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'application/json');
+function loginPage(req, res) {
+    res.send('You must log in!');
+}
 
-    // if req.url is "/restaurants", send them all restaurants
-    // if it's "/users", send a list of users
-    // else if it doesn't match either, send a welcome message
+app.get('/login', loginPage);
 
-    if (req.url === "/restaurants") {
-        const allRestaurants = await Restaurant.getAll();
-        const restaurantJSON = JSON.stringify(allRestaurants);    
-        res.end(restaurantJSON);
-    } else if (req.url.startsWith("/users")) {   
-
-        
-        const parts = req.url.split("/");
-        console.log(parts);
-        // when the req.url is "/users", parts is [ '', 'users' ]
-        // when req.url is "/users/3", parts is [ '', 'users', '3' ]
-        
-        const method = req.method;
-        if (method === "GET") {
-            if (parts.length === 2) {
-                const allUsers = await User.getAll();
-                const userJSON = JSON.stringify(allUsers);    
-                res.end(userJSON);
-            } else if (parts.length === 3) {
-                // the id will be parts[2]
-                const userId = parts[2];
-                // get user by id
-                const theUser = await User.getById(userId);
-                const userJSON = JSON.stringify(theUser);
-                res.end(userJSON);
-            } else {
-                res.statusCode = 404;
-                res.end('Resource not found.');
-            }
-        } else if (method === "POST") {
-            // let's read those chunks!
-            let body = '';
-            req.on('data', (chunk) => {
-                // .toString() is built into most objects
-                // it returns a string representation of the object
-                body += chunk.toString();
-            });
-
-            req.on('end', async () => {
-                const parsedBody = querystring.parse(body);
-                console.log('====================');
-                console.log(parsedBody);
-                console.log('^^^^^^ BODY OF FORM ^^^^^^^^');
-                const newUserId = await User.add(parsedBody);
-                res.end(`{ "id": ${newUserId}}`);
-            });
-
-
-        } else if (method === "PUT") {
-            res.end('{ "message": "you wanna update, doncha?"}');
-        } else if (method === "DELETE") {
-            if (parts.length === 3) {
-                const userId = parts[2];
-                await User.delete(userId);
-                res.end(`{ "message": "Deleted user with id ${userId}"}`);
-            } else {
-                res.end('{ "message": "NO."}');
-            }
-        }
-
-    } else {
-        res.end(`{
-            message: "Thank you for your patronage. Please send bitcoin."
-        }`);
-    }
+app.get('/restaurants', async (req, res) => {
+    const allRestaurants = await Restaurant.getAll();
+    // const restaurantJSON = JSON.stringify(AllRestaurants);
+    // res.json will do 2 things:
+    // 1. It converts your JS Object or Array to a JSON string
+    // 2. It puts the correct Content-Type header on the response 
+    res.json(allRestaurants);
 });
 
-server.listen(port, hostname, () => {
-    console.log(`Server is running at http://${hostname}:${port}`);
+app.get('/users', async (req, res) => {
+    const allUsers = await User.getAll();
+    res.json(allUsers);
+});
+app.get('/users/:id', async (req, res) => {
+    // How to grab a piece out of req.params (or any object):
+    // const id = req.params.id;
+    // This is known as "destructuring"
+    const {id} = req.params;
+    const theUser = await User.getById(id);
+    res.json(theUser);
+});
+
+app.post('/users', async (req, res) => {
+    console.log(req.body);
+    res.json(req.body);
+    await User.add(req.body);
+});
+
+app.put('/users/:id', async (req, res) => {
+    console.log(req.body);
+    await User.update(req.params.id, req.body);
+    res.end(`{ "id": ${req.params.id}}`); 
+});
+
+app.delete('/users/:id', async (req, res) => {
+    await User.delete(req.params.id);
+    res.end(`{ "id": deleted user id ${req.params.id}}`);
+});
+
+
+app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
 });
